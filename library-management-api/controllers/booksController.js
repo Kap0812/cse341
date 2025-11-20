@@ -2,41 +2,41 @@ const { ObjectId } = require('mongodb');
 const { getDB } = require('../db/connection');
 const { validationResult } = require('express-validator');
 
-// Get all authors
-const getAllAuthors = async (req, res) => {
+// Get all books
+const getAllBooks = async (req, res) => {
   try {
     const db = getDB();
-    const authors = await db.collection('authors').find().toArray();
-    res.json(authors);
+    const books = await db.collection('books').find().toArray();
+    res.json(books);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to retrieve authors', details: err.message });
+    res.status(500).json({ error: 'Failed to retrieve books', details: err.message });
   }
 };
 
-// Get single author by ID
-const getAuthorById = async (req, res) => {
+// Get single book by ID
+const getBookById = async (req, res) => {
   try {
     const { id } = req.params;
     
     if (!ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid author ID format' });
+      return res.status(400).json({ error: 'Invalid book ID format' });
     }
 
     const db = getDB();
-    const author = await db.collection('authors').findOne({ _id: new ObjectId(id) });
+    const book = await db.collection('books').findOne({ _id: new ObjectId(id) });
     
-    if (!author) {
-      return res.status(404).json({ error: 'Author not found' });
+    if (!book) {
+      return res.status(404).json({ error: 'Book not found' });
     }
     
-    res.json(author);
+    res.json(book);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to retrieve author', details: err.message });
+    res.status(500).json({ error: 'Failed to retrieve book', details: err.message });
   }
 };
 
-// Create new author
-const createAuthor = async (req, res) => {
+// Create new book
+const createBook = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -44,33 +44,36 @@ const createAuthor = async (req, res) => {
     }
 
     const db = getDB();
-    const authorData = {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      biography: req.body.biography,
-      birthDate: req.body.birthDate,
-      nationality: req.body.nationality,
+    const bookData = {
+      title: req.body.title,
+      author: req.body.author,
+      isbn: req.body.isbn,
+      publishYear: req.body.publishYear,
+      genre: req.body.genre,
+      pages: req.body.pages,
+      description: req.body.description,
+      available: req.body.available !== undefined ? req.body.available : true,
       createdAt: new Date()
     };
 
-    const result = await db.collection('authors').insertOne(authorData);
+    const result = await db.collection('books').insertOne(bookData);
     
     res.status(201).json({
-      message: 'Author created successfully',
-      authorId: result.insertedId
+      message: 'Book created successfully',
+      bookId: result.insertedId
     });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create author', details: err.message });
+    res.status(500).json({ error: 'Failed to create book', details: err.message });
   }
 };
 
-// Update author
-const updateAuthor = async (req, res) => {
+// Update book
+const updateBook = async (req, res) => {
   try {
     const { id } = req.params;
     
     if (!ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid author ID format' });
+      return res.status(400).json({ error: 'Invalid book ID format' });
     }
 
     const errors = validationResult(req);
@@ -80,55 +83,58 @@ const updateAuthor = async (req, res) => {
 
     const db = getDB();
     const updateData = {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      biography: req.body.biography,
-      birthDate: req.body.birthDate,
-      nationality: req.body.nationality,
+      title: req.body.title,
+      author: req.body.author,
+      isbn: req.body.isbn,
+      publishYear: req.body.publishYear,
+      genre: req.body.genre,
+      pages: req.body.pages,
+      description: req.body.description,
+      available: req.body.available,
       updatedAt: new Date()
     };
 
-    const result = await db.collection('authors').updateOne(
+    const result = await db.collection('books').updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData }
     );
 
     if (result.matchedCount === 0) {
-      return res.status(404).json({ error: 'Author not found' });
+      return res.status(404).json({ error: 'Book not found' });
     }
 
-    res.json({ message: 'Author updated successfully' });
+    res.json({ message: 'Book updated successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update author', details: err.message });
+    res.status(500).json({ error: 'Failed to update book', details: err.message });
   }
 };
 
-// Delete author
-const deleteAuthor = async (req, res) => {
+// Delete book
+const deleteBook = async (req, res) => {
   try {
     const { id } = req.params;
     
     if (!ObjectId.isValid(id)) {
-      return res.status(400).json({ error: 'Invalid author ID format' });
+      return res.status(400).json({ error: 'Invalid book ID format' });
     }
 
     const db = getDB();
-    const result = await db.collection('authors').deleteOne({ _id: new ObjectId(id) });
+    const result = await db.collection('books').deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ error: 'Author not found' });
+      return res.status(404).json({ error: 'Book not found' });
     }
 
-    res.json({ message: 'Author deleted successfully' });
+    res.json({ message: 'Book deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to delete author', details: err.message });
+    res.status(500).json({ error: 'Failed to delete book', details: err.message });
   }
 };
 
 module.exports = {
-  getAllAuthors,
-  getAuthorById,
-  createAuthor,
-  updateAuthor,
-  deleteAuthor
+  getAllBooks,
+  getBookById,
+  createBook,
+  updateBook,
+  deleteBook
 };
